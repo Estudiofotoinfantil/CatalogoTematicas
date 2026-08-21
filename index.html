@@ -812,6 +812,14 @@ tr:hover td{background:#FAFBFF}
 
 <script>
 // ══════════════════════════════════════════════════
+// COPIA LIMPIA DEL HTML — se captura ANTES de que
+// cualquier función dibuje algo en la página, para
+// que "Exportar para publicar" nunca fotografíe el
+// panel admin ni contenido ya renderizado.
+// ══════════════════════════════════════════════════
+const PRISTINE_HTML=document.documentElement.outerHTML;
+
+// ══════════════════════════════════════════════════
 // DATOS POR DEFECTO
 // ══════════════════════════════════════════════════
 
@@ -2597,8 +2605,10 @@ function initPWA(){
 // EXPORTAR HTML CON DATOS BAKED-IN — para publicar
 // ══════════════════════════════════════════════════
 function exportarHTML(){
-  // Captura el HTML actual y le inyecta un script que pre-carga
-  // los datos actuales en localStorage al abrirse en cualquier browser
+  // Parte SIEMPRE de la copia limpia (PRISTINE_HTML), nunca del DOM
+  // en vivo — así no importa si estabas en el dashboard, en un
+  // formulario o donde sea: el archivo exportado siempre arranca
+  // fresco en el catálogo público, sin nada duplicado ni pegado.
   const seed=`\n<script id="ef-seed">
 (function(){
   var d=${JSON.stringify({
@@ -2611,8 +2621,8 @@ function exportarHTML(){
 })();
 <\/script>`;
 
-  const html=document.documentElement.outerHTML
-    .replace(/(<script id="ef-seed">[\s\S]*?<\/script>)/,'') // remover seed anterior
+  const html=PRISTINE_HTML
+    .replace(/(<script id="ef-seed">[\s\S]*?<\/script>)/,'') // por si ya traía un seed
     .replace('</head>',seed+'</head>');
 
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});

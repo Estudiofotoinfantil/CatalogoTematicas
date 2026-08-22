@@ -1041,13 +1041,21 @@ function cardHTML(t){
   </div>`;
 }
 
-function renderHome(filter=''){
+function renderHome(filter='',catId=null){
   const wrap=document.getElementById('cats-wrap');
   const empty=document.getElementById('empty-state');
   if(!wrap)return;
 
   const activeTemas=ST.temas.filter(t=>t.estado==='activo');
   const q=filter.toLowerCase().trim();
+
+  if(catId){
+    const cat=ST.cats.find(c=>c.id===catId);
+    const res=activeTemas.filter(t=>(t.categorias||[]).includes(catId)).slice().sort((a,b)=>a.orden-b.orden);
+    empty.classList.remove('on');
+    wrap.innerHTML=`<div class="cat-row"><div class="row-head"><span class="row-label">${cat?cat.emoji+' '+cat.nombre:'Temáticas'} · ${res.length}</span><span class="btn-ver" onclick="renderHome()">← Volver</span></div><div class="h-scroll">${res.map(cardHTML).join('')}</div></div>`;
+    return;
+  }
 
   if(q){
     const res=activeTemas.filter(t=>
@@ -1074,7 +1082,7 @@ function renderHome(filter=''){
       return `<div class="cat-row">
         <div class="row-head">
           <span class="row-label">${cat.emoji} ${cat.nombre}</span>
-          <span class="btn-ver" onclick="event.stopPropagation()">Ver todas →</span>
+          <span class="btn-ver" onclick="verTodasCategoria(event,'${cat.id}')">Ver todas →</span>
         </div>
         <div class="h-scroll">${items.map(cardHTML).join('')}</div>
       </div>`;
@@ -1100,6 +1108,12 @@ function clearSearch(){
   document.getElementById('search-input').value='';
   document.getElementById('search-clear').classList.remove('on');
   renderHome();
+}
+function verTodasCategoria(ev,catId){
+  ev.stopPropagation();
+  renderHome('',catId);
+  const scroll=document.getElementById('view-home');
+  if(scroll)scroll.scrollTop=0;
 }
 
 // ══════════════════════════════════════════════════
